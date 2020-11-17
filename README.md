@@ -55,9 +55,68 @@ Of course, we don't need to use them all. They can be configured according appli
 Again, the order of filters matters, and the filters provided by _Spring Security_ has they own order. 
 It isn't necessary know this ordering, however there are times that it is beneficial to know this.
 
+## Authentication
+
+_Spring Security_ provides comprehensive support for **Authentication**. Let's see the main architectural components of _Spring Security's_ used in _Servlet_ authentication.
+
+### Security Context Holder
+
+`SecurityContextHolder` is in the heart of _Spring Security's_ authentication model. It's here that the details of who is authenticated is store. 
+It doesn't matter how is populated, if it contains a value, then it is used as the currently authenticated user.
+
+The `SecurityContextHolder` contains the `SecurityContext`, which in turn contains an `Authentication` object.
+
+By default, the `SecurityContextHolder` uses a **_ThreadLocal_** to store these details, which means that the `SecurityContext` is always available to methods in the same thread, even if is not explicitly passed around as an argument.
+Using a ThreadLocal in this way is quite safe if care is taken to clear the thread after the present principal’s request is processed.
+_Spring Security's_ `FilterChainProxy` ensures that the `SecurityContext` is always cleared.
+
+### Authentication
+
+The `Authentication` server two main purposes within _Spring Security_: provide the credentials a user provided to authenticate, and represents the currently authenticated user, obtained from the `SecurityContext`.
+
+This object contains: 
+
+* **`principal`:** identifies the user, in most time an instance of `UserDetails`.
+* **`credentials`:** often a password, that will be cleared after the user is authenticated.
+* **`authorities`:** permissions the user is granted, like roles or scopes.
+
+### Granted Authority
+
+`GrantedAuthority` is an authority that is granted to the principal. A few examples are roles or scopes. 
+These roles/scopes are later on configured for web authorization, method authorization and domain object authorization.
+Other parts of _Spring Security_ are capable of interpreting these authorities, and expect them to be present. 
+When using username/password based authentication, `GrantedAuthority` are usually loaded by the `UserDetailsService`.
+
+### Authentication Manager and Authentication Provider
+
+`AuthenticationManager` is the API that defines how _Spring Security's_ Filters perform authentication. 
+It's not mandatory use an `AuthenticationManager`, but when we use, it's responsible to return the `Authentication` object that will be stored in `SecurityContextHolder` by the controller. 
+
+The implementation of `AuthenticationManager` could be anything, but the most common is `ProviderManager`. 
+This implementation delegates the authentication to a list of `AuthenticationProvider`, where each one knows how to perform a specific type of authentication. 
+For example, `DaoAuthenticationProvider` supports username/password based authentication, while `JwtAuthenticationProvider` supports authentication a JWT token.  
+This allows different types of authentication and exposing a single `AuthenticationManager` bean.
+
+During the authentication process, each `AuthenticationProvider` has an opportunity to indicate that authentication should be successful, fail, or indicate it cannot make a decision and allow a downstream provider to decide.
+If none of the providers in list can authenticate, then authentication will fail with a `ProviderNotFoundException`, that indicates the `ProviderManager` was not configured to support the type of `Authentication` that was passed into it.
+ 
+### AuthenticationEntryPoint and AbstractAuthenticationProcessingFilter
+
+`AuthenticationEntryPoint` is used to send an HTTP response that request credentials from a client, when the client try to make an unauthenticated request to a resource that they are not authorized to access.
+In this case an implementation of `AuthenticationEntryPoint` is used to request credentials from the client.  
+
+With this, an `AbstractAuthenticationProcessingFilter` is used as a base _Filter_ for authenticating a user's credentials. 
+When the user submits their credentials, it creates an `Authentication` from the request. This object depends on the subclass of `AbstractAuthenticationProcessingFilter`.
+For example, `UserPasswordAuthenticationFilter` creates a `UserPasswordAuthenticationToken` from a username and password send with the request.
+
+Next, the `Authentication` is passed into the `AuthenticationManager` to be authenticated. 
+If fails, the `SecurityContextHolder` is cleared out and `AuthenticationFailureHandler` is invoked.
+If success, the `Authentication` object is set on the `SecurityContextHolder` and `AuthenticationSuccessHandler`.
+
+
 ___  
 
-To read more the completely documentation, access this [link](https://spring.io/projects/spring-security#learn).
+To read the completely documentation, access this [link](https://spring.io/projects/spring-security#learn).
 
 
 
