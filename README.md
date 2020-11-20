@@ -47,7 +47,7 @@ This allows providing a separate configuration for different slices of the appli
 
 ![alt text](https://docs.spring.io/spring-security/site/docs/5.4.1/reference/html5/images/servlet/architecture/multi-securityfilterchain.png "Multiple Security Filter Chain")
       
-#### Security Filters
+### Security Filters
 
 _Spring Security_ has a lot of filters, that can be use for many situations. Some examples are **CsrfFilter**, **OAuth2AuthorizationRequestRedirectFilter** and **BasicAuthenticationFilter**. 
 Of course, we don't need to use them all. They can be configured according applications' necessity, and as we said, we can have different groups of filters.
