@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  * This uses a custom form, build in resources/templates/login.html
  * How form uses thymeleaf, we need to add 'org.springframework.boot:spring-boot-starter-thymeleaf' dependency
  */
-@EnableWebSecurity
+//@EnableWebSecurity
 public class InMemoryAndCustomLogin extends InMemoryAdapter {
 
     @Override
