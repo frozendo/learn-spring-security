@@ -1,9 +1,13 @@
 package com.frozendo.learn.springsecurity.inmemory;
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-@Configuration
+/**
+ * Configure routes for each user type
+ * This uses form login provided by Spring
+ */
+//@EnableWebSecurity
 public class InMemoryAndDefaultLogin extends InMemoryAdapter {
 
     @Override

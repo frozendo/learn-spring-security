@@ -6,6 +6,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Class to configure Spring security with InMemory authentication
+ * The users admin and user are created with respective roles
+ */
 public class InMemoryAdapter extends WebSecurityConfigurerAdapter {
 
     @Override
