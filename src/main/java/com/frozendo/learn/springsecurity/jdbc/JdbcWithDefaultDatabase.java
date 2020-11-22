@@ -23,7 +23,7 @@ import javax.sql.DataSource;
  * This class use a default schema database provided by Spring
  * With this schema, we use {@link JdbcDaoImpl}, that is a default implementation for {@link UserDetailsService}
  */
-@EnableWebSecurity
+//@EnableWebSecurity
 public class JdbcWithDefaultDatabase extends WebSecurityConfigurerAdapter {
 
     @Override
@@ -44,7 +44,7 @@ public class JdbcWithDefaultDatabase extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
     }
 
-    @Bean
+    //@Bean
     DataSource dataSource() {
         return new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2)
@@ -57,7 +57,7 @@ public class JdbcWithDefaultDatabase extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    //@Bean
     UserDetailsManager users(DataSource dataSource) {
         PasswordEncoder encoder = passwordEncoder();
         UserDetails user = User.builder()
