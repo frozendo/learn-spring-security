@@ -1,5 +1,6 @@
 package com.frozendo.learn.springsecurity;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,19 +13,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * Class to configure Spring security with InMemory authentication
  * The users admin and user are created with respective roles
  * Configure routes for each user type
- * This uses form login provided by Spring
+ * This uses a custom form, build in resources/templates/login.html
+ * How form uses thymeleaf, we need to add 'org.springframework.boot:spring-boot-starter-thymeleaf' dependency
  */
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private CustomBasicAuthenticationEntryPoint customBasicAuthenticationEntryPoint;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+
         http.authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasRole("USER")
                 .antMatchers("/**").permitAll()
                 .and()
-                .formLogin();
+                .formLogin()
+                .loginPage("/login") //say to use the custom login page
+                .permitAll();
+
+        http
+                .httpBasic()
+                .realmName("CustomRealmName")
+                .authenticationEntryPoint(customBasicAuthenticationEntryPoint);
     }
 
     @Override

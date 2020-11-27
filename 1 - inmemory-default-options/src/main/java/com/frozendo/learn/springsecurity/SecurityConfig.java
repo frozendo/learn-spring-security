@@ -12,33 +12,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * Class to configure Spring security with InMemory authentication
  * The users admin and user are created with respective roles
  * Configure routes for each user type
- * This uses a custom form, build in resources/templates/login.html
- * How form uses thymeleaf, we need to add 'org.springframework.boot:spring-boot-starter-thymeleaf' dependency
+ * This uses form login provided by Spring and standard basic-authentication options
  */
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
+        http.authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasRole("USER")
                 .antMatchers("/**").permitAll()
                 .and()
                 .formLogin()
-                .loginPage("/login") //say to use the custom login page
-                .permitAll();
+                .and()
+                .httpBasic();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
                 .withUser("admin")
-                .password(passwordEncoder().encode("adminuser")).roles("ADMIN")
+                .password(passwordEncoder().encode("admin")).roles("ADMIN")
                 .and()
                 .withUser("user")
-                .password(passwordEncoder().encode("commonuser")).roles("USER");
+                .password(passwordEncoder().encode("user")).roles("USER");
     }
 
     @Bean

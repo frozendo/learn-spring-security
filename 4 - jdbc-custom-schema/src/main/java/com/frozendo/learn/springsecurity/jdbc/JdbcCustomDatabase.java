@@ -30,6 +30,7 @@ public class JdbcCustomDatabase extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin();
         http.csrf().disable();
+        http.httpBasic();
         http.headers().frameOptions().disable();
     }
 }
