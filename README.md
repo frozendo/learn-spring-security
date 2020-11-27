@@ -58,16 +58,7 @@ It doesn't matter how is populated, if it contains a value, then it is used as t
 
 ## Username/Password Authentication
 
-One of the most common ways to authenticate a user is validating a username and password. _Spring Security_ provides comprehensive support for authenticating with a username and password.
-
-### Reading the Username and Password
-
-_Spring Security_ provides the following build in mechanisms to work with username and password
-
-* **Form Login:** for more informations and examples, see the branch **form-login**.
-* **Basic Authentication:** for more informations and examples, see the branch **basic-authentication**
-
-
+One of the most common ways to authenticate a user is validating a username and password.To read more,see **username-password-authentication** branch
 
 
     
