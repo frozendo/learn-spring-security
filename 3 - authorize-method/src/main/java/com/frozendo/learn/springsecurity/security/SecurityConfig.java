@@ -13,10 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * The simplest way to configure routes in Spring Security.
- * Each route can be liberate for one or more roles, authorities or scopes.
- * For this, we can use methods hasRole, hasAnyRole, hasAuthority or hasAnyAuthority.
- * It's a better choice, restrict all and then allow or deny each individual route.
+ * On this version, we use authorize methods to allow or block user access.
+ * So, in this class we only allow access to h2 and home endpoint.
+ * For all other endpoints, an user need to be authenticated.
+ * The methods @PreAuthorize and @PostFilter will be use to decided what a user can access and see.
  */
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)

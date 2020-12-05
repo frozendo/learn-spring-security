@@ -1,245 +1,160 @@
-# Username/Password Authentication
+# Authorization
 
-_Spring Security_ provides support for username/password authentication, with two mechanisms to do that: **Form Login** and **Basic Authentication**
+**Authorization** is when the system check what the authenticated user can do. _Spring Security_ provides support for this, working with **Authorities**.
 
-> **Obs.:** Spring Security also provide support to Digest Authentication, but it's not recommended to use this mechanism in modern applications.
+_Authorities_ can be a role, permission or scope. The `Authentication` object stores a list of `GrantedAuthority` interface, which represents the authorities that have been grated to the principal (user).
+The list is inserted into the `Authentiction` by the `AuthenticationManager` and later read by `AccessDecisionManager` when making authorization decisions.
+_Spring Security_ includes one concrete `GrantedAuthority` implementation, `SimpleGrantedAuthority`.  
 
-The two mechanisms work almost the same way. 
+### AccessDecisionManager
 
-In both cases, when we receive an unauthenticated request for a private resource, _Spring Security_ denies this request and
-return an implementation of `AuthenticationEntryPoint` to force the user login: `LoginUrlAuthenticationEntryPoint` for **FormLogin** and `BasicAuthenticationEntryPoint` for **BasicAuth**.  
+We mention earlier the `AccessDecisionManager` interface, that is used for _Spring Security_ to control access to secure objects. 
+`AccessDecisionManager` is called by `AbstractSecurityInterceptor`, and is responsible for making final access control decision. 
+This interface contains three methods, that are used to receive the relevant information and determine if the class can validate the request.
 
-When the username and password sent, a filter will process the user's authenticate: **FormLogin** uses `UsernamePasswordAuthenticationFilter` and **BasicAuth** uses `BasicAuthenticationFilter`.
-Both create a `UsernamePasswordAuthenticationToken`, which is a type of `Authentication` and extracting the username and password from the request.
-Then, the object passes to `AuthenticationManager` to be authenticated. The details of what `AuthenticationManager` looks like depend on how the user information is stored.
+We can implement our own `AccessDecisionManager`, but _Spring Security_ includes several implementations that are based on voting. 
+Using this approach, a series of `AccessDecisionVoter` implementations are polled on an authorization decision. 
+Each voter implementation can return a value with their vote, with each voter having their own logical for defining their vote.
 
-If authentication is successful, then the Authentication object inserted into the `SecurityContextHolder`, and the success status returned. 
-If failure, the `SecurityContextHolder` is cleared out, and the failure returned to user.
-
-## Form Login
-
-_Form Login_ is enabled by default for servlet application, if any other configuration is not provided. 
-However, it can be explicitly provided with minimal configuration. 
-This can be done by creating a class extends `WebSecurityConfigurerAdapter` and override the _configure_ method, that have an HttpSecurity object.
-
-```
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(HttpSecurity http) {
-        http.formLogin();
-    }
-}
-```
-
-With this minimal configuration, _Spring Security_ will render a default form login and will be responsible for doing the entire authentication flow.
-
-In most cases, applications have their own login form, and we can allow this with an extra simple configuration. 
-
-```
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(HttpSecurity http) {
-        http.formLogin().loginPage("/login").permitAll();
-    }
-}
-```
-
-The `loginPage` method receives the name of the login page, since this page can be found in the application's classpath.
-With a login page specified, you are responsible for rendering the page. To do this, we need provide some key points: 
-
-* The form should perform a `post` call to `/login` URL
-* The form should specify the username in a parameter named `username`
-* The form should specify the password in a parameter named `password`
-* The form will need to include a CSRF Token
-* If the HTTP parameter error found, it indicates the user failed to provide a valid username/password
-* If the HTTP parameter logout is found, it indicates the user has logged out successfully
-
-If it's necessary to customize anything of the points above, this can be done with additional configurations.
+The voter's return type is an int value and can be represented with the static fields: 
+* ACCESS_ABSTAIN: when it has no opinion on an authorization decision 
+* ACCESS_DENIED: when vote to deny the authorization
+* ACCESS_GRANTED: when vote to allow the authorization
   
- ## Basic Authentication
+Based on its assessment of votes, the `AccessDecisionManager` decides if throw an `AccessDeniedException` or authorize the request to be executed. 
 
-Like **FormLogin**, **BasicAuthentication** is enabled by default and only needs to be provided explicitly when another servlet based configuration is provided.
-   
-Again, this can be done by creating a class that extends `WebSecurityConfigurerAdapter`.
+## Authorize Requests
+
+The **FilterSecurityInterceptor** provides authorization for requests. This object is inserted into the _FilterChainProxy_ as one of the _Security Filters_. 
+It's responsible for extracting user information and call `AccessDecisionManager`.
+
+For this work correctly, we need to config which route should require an authentication user. 
+By default, Spring Security authorization will require all requests need authentication. However, we can configure to have different rules for different routes.
 
 ```
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(HttpSecurity http) {
-        http.httpBasic();
-    }
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        // ...
+        .authorizeRequests(authorize -> authorize                                  
+            .mvcMatchers("/resources/**", "/signup", "/about").permitAll()                  
+            .anyRequest().denyAll()                                                
+        );
 }
 ```
 
-In some cases we want to change the returned made by _Spring Security_ when the user is not authenticated.
-For these situations, we can create a class that implements `AuthenticationEntryPoint` and pass an instance of this class to the method `authenticationEntryPoint`.
+## Expression-Based Access Control
+
+_Spring Security_ 3.0 introduced the ability to use **Spring EL** expression as an authorization mechanism in addition to the simple use of configuration attributes and access-decision voters. 
+Expression-based access control is built on the same architecture but allows complicated Boolean logic to be encapsulated in a single expression.
+
+Expressions are evaluated with a "root object" as part of the evaluation context. _Spring Security_ uses specific classes for web and method security as the root object, 
+in order to provide built-in expressions and access to values such as the current principal.
+
+The base class for expression root objects is `SecurityExpressionRoot`, and provide some common expression which are available in both web and method security, like **hasRole**, **hasAuthority**, **denyAll** and **permitAll**.
+
+Additionally, we have specific root object to web security, defined by the `WebSecurityExpressionRoot` class, which is use when evaluating web-access expression. 
+`WebSecurityExpressionRoot` class add the **hasIpAdrdress** method and provide directly access to `HttpServletRequest` object. 
+Besides that, a `WebExpressionVoter` will be added to the `AccessDecisionManager`.
+
+## Beans and path variable with expression
+
+We can easily extend the expressions available using an exposed Spring Bean. 
+With the bean name, defined explicitly ou implicitly, we can refer to the object and invoke a method to do the validation.
 
 ```
- http.httpBasic().authenticationEntryPoint(customAuthenticationEntryPoint);
-```
-
-## Store Credentials
-
-_Spring Security_ provides different ways to store, retrieve and validate user credentials. 
-
-### DaoAuthenticationProvider
-
-First of all, we need to look at **DaoAuthenticationProvider**. This is an implementation of `AuthenticationProvider`, so it's used by `AuthenticationManager` to validate the username and password.
-This is the class responsible to managing the authentication process and then return a result to the `AuthenticationManager`.
-
-To do this, it's uses a `UserDetailsService` for retrieving a username, password and other attributes for the authenticating username and password.
- `UserDetailsService` return an `UserDetails` object, that is validated by `DaoAuthenticationProvider`, with help of `PasswordEncoder`, and will be introduced like a principal in `Authentication` object, if authentication is successful.  
-
-### InMemory Authentication
-
-**InMemory Authentication** is one of the options that Spring provide for storing user information. 
-When we use it, user information is kept together with the source code and when the application starts, this data is loaded into application memory.
-This is not a good option for production, since everyone can obtain and decompiler the code, and thus get access to sensitive data.
-_InMemory Authentication_ is the default option for storing user information. 
-
-To retrieved data in memory, _Spring Security_ uses `InMemoryUserDetailsManager` an implementation of `UserDetailsManager`.
-We can create users by creating a `UserDetailsService` bean, using the `UserBuilder` class to build the objects and return an instance of `InMemoryUserDetailsManager`, with the users created.
-
-```
-@Bean
-public UserDetailsService users() {
-    // The builder will ensure the passwords are encoded before saving in memory
-    UserBuilder users = User.withDefaultPasswordEncoder();
-    UserDetails user = users
-        .username("user")
-        .password("password")
-        .roles("USER")
-        .build();
-    UserDetails admin = users
-        .username("admin")
-        .password("password")
-        .roles("USER", "ADMIN")
-        .build();
-    return new InMemoryUserDetailsManager(user, admin);
-}
-```
-
-Another option is to override the method `configure` of the `WebSecurityConfigurerAdapter` class, which has an `AuthenticationManagerBuilder` object. Then, using the builders methods, we can create and define the user data.
-
-```
-@Override
-protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication()
-            .withUser("admin")
-            .password(passwordEncoder().encode("admin")).roles("ADMIN")
-            .and()
-            .withUser("user")
-            .password(passwordEncoder().encode("user")).roles("USER");
-}
-```
-
-### JDBC Authentication
-
-**JDBC Authentication** allows us to have the user data stored in a database. This is a better option to production environment, as the sensitive data is no longer kept in the code.
-In this case, _Spring Security_ uses `JdbcDaoImpl` class, a different implementation for `UserDetailsService`.
-
-To activate this option, in the class that extends the `WebSecurityConfigurerAdapter`, override `configure` method and use the `jdbcAuthentication` method of the `AuthenticationManagerBuilder` object.
-
-```
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication().dataSource(dataSource());
-    }
-}
-```
-
-`JdbcDaoImpl` require tables to load information about the user, and we have the option of using a default schema, provided by _Spring Security_, with two tables.
-
-```
-create table users(
-    username varchar_ignorecase(50) not null primary key,
-    password varchar_ignorecase(500) not null,
-    enabled boolean not null
-);
-
-create table authorities (
-    username varchar_ignorecase(50) not null,
-    authority varchar_ignorecase(50) not null,
-    constraint fk_authorities_users foreign key(username) references users(username)
-);
-create unique index ix_auth_username on authorities (username,authority);
-```
-
-It's important we configure the dataSource correctly, or `JdbcDaoImpl` can't connect to the database. In example below, we set up a dataSource to embedded database.
-
-```
-@Bean
-DataSource dataSource() {
-    return new EmbeddedDatabaseBuilder()
-        .setType(H2)
-        .addScript("classpath:org/springframework/security/core/userdetails/jdbc/users.ddl")
-        .build();
-}
-```
-
-We don't need to make extras configurations, as `JdbcDaoImpl` is prepared to access these tables when authenticated the user. 
-However, when necessary, we can provide our own table structure. In these cases, we have to provide a custom implementation of the `UserDetailsService` class, and override the method `loadUserByUsername`.
-In this method we build a logic to access and retrieve data from our database.
-
-```
-@Service
-public class CustomUserDetails implements UserDetailsService {
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        //logic to get user data
-    }
+public class WebSecurity {
+        public boolean check(Authentication authentication, HttpServletRequest request) {
+                ...
+        }
 }
 
-public class JdbcCustomDatabase extends WebSecurityConfigurerAdapter {
+http
+    .authorizeRequests(authorize -> authorize
+        .antMatchers("/user/**").access("@webSecurity.check(authentication,request)")
+        ...
+    )
 
-    @Autowired
-    @Qualifier("customUserDetails")
-    private UserDetailsService userDetailsService;
+```
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
-    }
+Likewise, when the URL has a path variable, we can easily refer to it and pass the variable's value to the method.
 
+```
+/* called URL = /users/{userId} */
+
+public class WebSecurity {
+        public boolean checkUserId(Authentication authentication, int id) {
+                ...
+        }
 }
+
+http
+    .authorizeRequests(authorize -> authorize
+        .antMatchers("/user/{userId}/**").access("@webSecurity.checkUserId(authentication,#userId)")
+        ...
+    );
 ```  
 
-### PasswordEncoder
+## Method Security Expressions
 
-**PasswordEncoder** is used to perform one way transformation of a password to allow the password to be stored securely, and used when it needs to be compared to a password provides by the user at the time of authentication.
-_Spring Security_ provides different implementations of `PasswordEncoder`, that provide supports to different encoder algorithms, like: 
-
-* **NoOpPasswordEncoder:** which required plain text passwords, in other words, without cryptography.
-* **BCryptPasswordEncoder:** implementation that support **bcrypt** algorithm, the default implementation.
-* **Argon2PasswordEncoder:** use **Argo2** algorithm to hash the passwords.
-* **Pbkdf2PasswordEncoder:** this class give support to **PBKDF2** algorithm
-* **SCryptPasswordEncoder:** class use **scrypt** algorithm to hash passwords 
-
-We can define a `PasswordEnconder` bean with any of these class. So, when the user tries authenticate, the password given at the login will be encoded use this instance, and consequently the relationship algorithm.
-For this yo work, it's important use the same algorithm to register the user's password.
+Method security support expression and allow a more specific validation of access, in addition to being able to filter the data that a user can access.
+There are four annotations which support these actions, and work with pre or post invocation. 
+Before use annotations, we have to enable them, and this could be done on any Spring Bean.
 
 ```
-@Bean
-public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+}
+```   
+
+### @PreAuthorize and @PostAuthorize
+
+The most obviously annotation is `@PreAuthorize` which decides whether a method can actually be called or not, using an expression.
+The expression defined within this annotation is executed before the method execution.
+
+```
+@PreAuthorize("hasAnyRole('ADMIN, TEACHER, COORDINATOR')")
+public ResponseEntity<List<ClassEntity>> listClass() {}
+```
+
+Any Spring-EL functionality is available within the expression, so you can also access properties like _authentication_ and _principal_ on the arguments. 
+`@PreAuthorize` also supports Spring Beans calls.
+
+```
+@PreAuthorize("@classSecurity.checkClassAccess(authentication, #id)")
+public ResponseEntity<ClassEntity> getClass(@PathVariable("id") Integer id) {}
+```
+
+Another option is to use the method argument as part of the expression, doesn't matter the type of the argument.
+There are a number of ways in which _Spring Security_ can resolve the method arguments, but since Java 8 and Spring 4, the most common is using the standard JDK reflection API.
+
+The other annotation, `@PostAuthorize` works almost the same way, but executes after method invocation. For this reason, its use is less common.
+Just as `@PreAuthorize` can access the method arguments, `@PostAuthorize` can access the return value from a method, use the built-in name **returnObject** in the expression.
+
+### @PreFilter and PostFilter
+
+_Spring Security_ supports filtering of collection, arrays, maps and streams using expressions. This is most commonly performed on the return value of a method. 
+
+```
+@PreAuthorize("hasRole('USER')")
+@PostFilter("hasPermission(filterObject, 'read') or hasPermission(filterObject, 'admin')")
+public List<Contact> getAll();
+```
+
+When use `@PostFilter` annotation, Spring Security iterates through the returned collection or map and removes any elements for which the supplied expression is false. 
+The name **filterObject** refers to the current object in the collection. 
+We can also filter before the method call, using `@PreFilter`, though this is a less common. 
+The syntax is just the same, but if there is more than one argument which is a collection type then you have to select one by name using the `filterTarget` property of this annotation.
+
+These two annotations also supports Spring Beans invokes.
+
+```
+@PreAuthorize("hasAnyRole('COORDINATOR, TEACHER')")
+@PostFilter("@gradeSecurity.checkCanReadGrade(authentication, filterObject)")
+public List<GradeEntity> listStudentClassGrades(@PathVariable("idClass") Integer idClass) {
+    return repository.findClassGrades(idClass);
 }
 ```
 
-When defining a bean for a specific class, all passwords must be stored with the same algorithm. Sometimes, especially when we have legacy data, it's necessary to support passwords in different forms of encryption.
-To do this, we can use the `DelegationPasswordEncoder` class: 
-
-```
-PasswordEncoder passwordEncoder =
-    PasswordEncoderFactories.createDelegatingPasswordEncoder();
-```
-
-Now, the password need to be stored in a specific format:
-
-```
-{id}encodedPassword
-```
-
-Such that `ìd` is an identifier used to look up which `PasswordEncoder` should be used, and `encodedPassword` is the original encoded password for the selected `PasswordEncoder`. 
-Based on `id`, the correct implementation and algorithm will be used by the `DelegationPasswordEncoder` to verify if the password given by user in the form login is the correct password.
-If the `id` cannot be found, the `id` will be null and if any implementation can't be applied for this id, an error will occur.
+One important thing to pay attention to is that the method return need to be a collection. So, if you build a Rest API and return a Response object, this annotation won't work.
+However, if you change to return a collection, as required, the Spring MVC still can understand and return the response correctly.
