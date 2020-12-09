@@ -58,7 +58,13 @@ It doesn't matter how is populated, if it contains a value, then it is used as t
 
 ## Username/Password Authentication
 
-One of the most common ways to authenticate a user is validating a username and password.To read more,see **username-password-authentication** branch
+One of the most common ways to authenticate a user is validating a username and password.To read more,see [username and password readme](username-password-authentication/UsernamePasswordReadMe.md)
+
+## Authorization
+
+The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authentication/AuthorizationReadMe.md) to read more about it.
+
+
 
 
     
