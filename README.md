@@ -64,7 +64,9 @@ One of the most common ways to authenticate a user is validating a username and 
 
 The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authorization/AuthorizationReadMe.md) to read more about it.
 
+## OAuth 2.0
 
+OAuth is an open protocol to allow secure authorization in a simple and standard method from web, mobile and desktop applications. Read more in [oauth](oauth/OAuthReadme.md) directory.
 
 
     
