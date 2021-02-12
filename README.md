@@ -58,15 +58,15 @@ It doesn't matter how is populated, if it contains a value, then it is used as t
 
 ## Username/Password Authentication
 
-One of the most common ways to authenticate a user is validating a username and password.To read more,see [username and password](username-password-authentication/README.md)
+One of the most common ways to authenticate a user is validating a username and password.To read more,see [username and password](username-password-authentication)
 
 ## Authorization
 
-The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authorization/README.md) to read more about it.
+The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authorization) to read more about it.
 
 ## OAuth 2.0
 
-OAuth is an open protocol to allow secure authorization in a simple and standard method from web, mobile and desktop applications. Read more in [oauth](oauth/README.md) directory.
+OAuth is an open protocol to allow secure authorization in a simple and standard method from web, mobile and desktop applications. Read more in [oauth](oauth) directory.
 
 
     
