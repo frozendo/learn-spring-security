@@ -48,9 +48,9 @@ It doesn't matter how is populated, if it contains a value, then it is used as t
 
 * **Granted Authority:** authorities that is granted to the principal and use for authorization, like roles and scopes.
 
-* **AuthentcationManager:** defines how Spring Security's Filters perform authentication. It's not mandatory to use and the most common implementaion is `ProviderManager`.
+* **AuthenticationManager:** defines how Spring Security's Filters perform authentication. It's not mandatory to use and the most common implementaion is `ProviderManager`.
 
-* **AuthenticationProvider:** object that try the authentication. Usually, `AuthenticationManager` has a list of providers and each provider try the to authenticated, until one has success.
+* **AuthenticationProvider:** object that try the authentication. Usually, `AuthenticationManager` has a list of providers and each provider try to authenticated, until one has success.
 
 * **AuthenticationEntryPoint:** used to send an HTTP response that request credentials from a client, when the client try to make an unauthenticated request in a secret resource. 
 
@@ -58,15 +58,15 @@ It doesn't matter how is populated, if it contains a value, then it is used as t
 
 ## Username/Password Authentication
 
-One of the most common ways to authenticate a user is validating a username and password.To read more,see [username and password](username-password-authentication/UsernamePasswordReadMe.md)
+One of the most common ways to authenticate a user is validating a username and password.To read more,see [username and password](username-password-authentication/README.md)
 
 ## Authorization
 
-The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authorization/AuthorizationReadMe.md) to read more about it.
+The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity. See [authorization](authorization/README.md) to read more about it.
 
 ## OAuth 2.0
 
-OAuth is an open protocol to allow secure authorization in a simple and standard method from web, mobile and desktop applications. Read more in [oauth](oauth/OAuthReadme.md) directory.
+OAuth is an open protocol to allow secure authorization in a simple and standard method from web, mobile and desktop applications. Read more in [oauth](oauth/README.md) directory.
 
 
     

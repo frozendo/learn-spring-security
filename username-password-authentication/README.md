@@ -217,7 +217,7 @@ _Spring Security_ provides different implementations of `PasswordEncoder`, that 
 * **SCryptPasswordEncoder:** class use **scrypt** algorithm to hash passwords 
 
 We can define a `PasswordEnconder` bean with any of these class. So, when the user tries authenticate, the password given at the login will be encoded use this instance, and consequently the relationship algorithm.
-For this yo work, it's important use the same algorithm to register the user's password.
+For this work, it's important use the same algorithm to register the user's password.
 
 ```
 @Bean
