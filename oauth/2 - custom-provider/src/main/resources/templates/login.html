@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+
+    <head>
+        <title>Please Log In</title>
+
+        <style type="text/css">
+
+                .form-login {
+                    display: block;
+                    margin: 0px auto;
+                    width: 35%;
+                    background-color: #e2dbdb;
+                    padding: 10px;
+                    text-align: center;
+                }
+
+                .login-item {
+                    position: relative;
+                    width: 32%;
+                    display: inline-block;
+                }
+
+                .login-button {
+                    display: block;
+                    padding: 10px;
+                    border: 1px solid #807777;
+                    width: inherit;
+                    margin: 0px auto;
+                    border-width: medium;
+                    cursor: pointer;
+                }
+
+            </style>
+
+    </head>
+
+    <body>
+    <div class="form-login">
+        <h1>Choose one to login...</h1>
+
+        <div>
+            <div class="login-item">
+                <a class="login-button" href="/login/oauth2/authorization/google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" width="50px">
+                </a>
+            </div>
+            <div class="login-item">
+                <a class="login-button" href="/login/oauth2/authorization/git-hub">
+                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="50px">
+                </a>
+            </div>
+            <div class="login-item">
+                <a class="login-button" href="/login/oauth2/authorization/keycloak">
+                    <img src="https://design.jboss.org/keycloak/logo/images/keycloak_google_plus_profile_250x250.png" width="50px">
+                </a>
+            </div>
+        </div>
+
+    </div>
+    </body>
+
+</html>

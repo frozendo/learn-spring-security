@@ -1,0 +1,42 @@
+server:
+  port: 8089
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 701419716137-kv6qm33ap22askshrsft45j75hhnp8nb.apps.googleusercontent.com
+            client-secret: xJp5WNlq80vIcSw_ZwpN4bru
+          git-hub:
+            client-id: 4ed56cfc108ef3422c1a
+            client-secret: 6dc8750f17172120fe55bc903a693e48f7b0c065
+          keycloak:
+            client-id: study-spring-security
+            client-secret: be3907d4-17fc-4322-9501-e572afaa8706
+            client-name: Key Cloak
+            scope: profile, email, address
+            redirect-uri: http://localhost:8089/login/oauth2/code/keycloack
+            client-authentication-method: basic
+            authorization-grant-type: authorization_code
+            provider: keycloak-provider
+        provider:
+          keycloak-provider:
+            authorization-uri: http://localhost:8080/auth/realms/master/protocol/openid-connect/auth
+            token-uri: http://localhost:8080/auth/realms/master/protocol/openid-connect/token
+            user-info-uri: http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo
+            user-name-attribute: sub
+
+  thymeleaf:
+    cache: false
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
