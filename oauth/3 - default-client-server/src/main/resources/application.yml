@@ -1,0 +1,23 @@
+server:
+  port: 9091
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: study-spring-security
+            client-secret: be3907d4-17fc-4322-9501-e572afaa8706
+            client-name: Key Cloak
+            scope: profile, email, address
+            redirect-uri: http://localhost:9091/login/oauth2/code/keycloack
+            client-authentication-method: basic
+            authorization-grant-type: authorization_code
+            provider: keycloak-provider
+        provider:
+          keycloak-provider:
+            authorization-uri: http://localhost:8080/auth/realms/school-application/protocol/openid-connect/auth
+            token-uri: http://localhost:8080/auth/realms/school-application/protocol/openid-connect/token
+            user-info-uri: http://localhost:8080/auth/realms/school-application/protocol/openid-connect/userinfo
+            user-name-attribute: sub
