@@ -7,11 +7,11 @@ spring:
       client:
         registration:
           google:
-            client-id: 701419716137-kv6qm33ap22askshrsft45j75hhnp8nb.apps.googleusercontent.com
-            client-secret: xJp5WNlq80vIcSw_ZwpN4bru
+            client-id: {client_id}
+            client-secret: {client_secret}
           git-hub:
-            client-id: 4ed56cfc108ef3422c1a
-            client-secret: 6dc8750f17172120fe55bc903a693e48f7b0c065
+            client-id: {client_id}
+            client-secret: {client_secret}
           keycloak:
             client-id: study-spring-security
             client-secret: be3907d4-17fc-4322-9501-e572afaa8706
